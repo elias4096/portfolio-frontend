@@ -5,7 +5,7 @@ const email = ref('')
 const password = ref('')
 
 async function onLogin() {
-    const response = await fetch('http://localhost:8080/api/auth/login', {
+    const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -17,7 +17,8 @@ async function onLogin() {
     })
 
     if (!response.ok) {
-        console.error('Login failed')
+        const errorText = await response.text()
+        console.error('Login failed:', response.status, errorText)
         return
     }
 
