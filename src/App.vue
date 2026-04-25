@@ -1,13 +1,13 @@
 <script setup>
-import AppFooter from './components/layout/AppFooter.vue'
 import AppHeader from './components/layout/AppHeader.vue'
+import AppFooter from './components/layout/AppFooter.vue'
 </script>
 
 <template>
-  <div class="d-flex flex-column min-vh-100 c-bg-darkest">
+  <div class="d-flex flex-column min-vh-100">
     <AppHeader />
 
-    <main class="flex-fill c-bg-dark">
+    <main class="flex-fill surface">
       <RouterView />
     </main>
 
@@ -16,16 +16,32 @@ import AppHeader from './components/layout/AppHeader.vue'
 </template>
 
 <style>
+:root {
+  --charcoal-1: #1A1D21;
+  --charcoal-2: #1C2025;
+  --charcoal-3: #1D2126;
+}
+
 @font-face {
   font-family: "Fira Sans";
   src: url("@/assets/fonts/FiraSans-Black.ttf") format("truetype");
 }
 
-.c-bg-dark {
-  background-color: rgb(50, 50, 50);
+body {
+  background: var(--charcoal-1) !important;
 }
 
-.c-bg-darkest {
-  background-color: rgb(25, 25, 25);
+.surface {
+  background: var(--charcoal-2) !important;
+}
+
+.surface-alt {
+  background: var(--charcoal-3) !important;
+}
+
+.title-text {
+  color: whitesmoke;
+  font-family: "Fira Sans";
+  text-decoration: none;
 }
 </style>

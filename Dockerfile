@@ -3,14 +3,14 @@
 
 # docker run -p 80:80 bryrmiginte/portfolio-frontend:latest
 
-FROM node:20-alpine AS builder
+FROM node:24 AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM caddy:2
+FROM caddy:2-alpine
 WORKDIR /srv
 COPY --from=builder /app/dist /srv
 COPY Caddyfile /etc/caddy/Caddyfile

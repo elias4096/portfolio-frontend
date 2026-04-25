@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 
 const projects = ref([])
-const form = ref({ title: null, displayOrder: null })
+const form = ref({ displayOrder: null, markdown: null })
 const isEditing = ref(false)
 
 onMounted(async () => {
@@ -19,7 +19,7 @@ async function createProject() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: form.value.title, displayOrder: form.value.displayOrder })
+        body: JSON.stringify({ displayOrder: form.value.displayOrder, markdown: form.value.markdown })
     })
 
     await loadProjects()
@@ -30,7 +30,7 @@ async function updateProject() {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: form.value.title, displayOrder: form.value.displayOrder })
+        body: JSON.stringify({ displayOrder: form.value.displayOrder, markdown: form.value.markdown })
     })
 
     await loadProjects()
@@ -46,8 +46,7 @@ async function deleteProject(id) {
 }
 
 function openCreate() {
-    let projectNumber = projects.value.length + 1
-    form.value = { title: 'New Project ' + projectNumber, displayOrder: projectNumber }
+    form.value = { displayOrder: projects.value.length + 1, markdown: "" }
     isEditing.value = false
 }
 
@@ -62,7 +61,7 @@ function openEdit(project) {
 
         <div class="d-flex justify-content-between">
             <h5>Projects</h5>
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#projectModal"
+            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#projectModal"
                 @click="openCreate">
                 Create Project
             </button>
@@ -71,14 +70,12 @@ function openEdit(project) {
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Title</th>
                     <th>Display Order</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="p in projects" :key="p.id">
-                    <td>{{ p.title }}</td>
                     <td>{{ p.displayOrder }}</td>
                     <td class="text-end">
                         <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
@@ -95,7 +92,6 @@ function openEdit(project) {
 
     </div>
 
-    <!-- TODO: move to seperate .vue file in /ui/modals -->
     <div class="modal" id="projectModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -107,8 +103,15 @@ function openEdit(project) {
                 </div>
 
                 <div class="modal-body">
-                    <input class="form-control" placeholder="Title" v-model="form.title" />
-                    <input class="form-control" placeholder="Display Order" v-model="form.displayOrder" />
+                    <div class="mb-3">
+                        <label class="form-label">Display Order</label>
+                        <input type="number" class="form-control" v-model.number="form.displayOrder" step="1" min="0" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Markdown</label>
+                        <textarea class="form-control form-control-lg" v-model="form.markdown" rows="8"></textarea>
+                    </div>
                 </div>
 
                 <div class="modal-footer">

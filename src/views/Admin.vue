@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import ProjectManager from '@/components/ui/ProjectManager.vue'
+import ProjectDashboard from '@/components/ui/ProjectDashboard.vue'
 
 const router = useRouter()
 const email = ref(null)
@@ -47,13 +47,13 @@ async function logout() {
 
                 <div v-if="email" class="card p-4">
                     <div class="d-flex justify-content-between">
-                        <h5>Admin Panel</h5>
+                        <h5>Admin Dashboard</h5>
                         <button class="btn btn-sm btn-outline-danger" @click="logout">Logout</button>
                     </div>
 
                     <p>Logged in as <strong>{{ email }}</strong></p>
 
-                    <ProjectManager></ProjectManager>
+                    <ProjectDashboard></ProjectDashboard>
                 </div>
 
             </div>

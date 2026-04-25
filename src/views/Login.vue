@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+// Todo: display message when response != ok.
+
 const router = useRouter()
 const email = ref('')
 const password = ref('')
@@ -19,8 +21,6 @@ async function onLogin() {
     })
 
     if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Login failed: ', response.status, errorText)
         return
     }
 
@@ -29,19 +29,21 @@ async function onLogin() {
 </script>
 
 <template>
-    <div class="container d-flex justify-content-center">
-        <form @submit.prevent="onLogin">
-            <div class="form-group my-2">
-                <input type="email" class="form-control" placeholder="Email" v-model="email" required>
-            </div>
+    <div class="container my-5 d-flex justify-content-center align-items-center">
+        <div class="card p-4 w-100" style="max-width: 400px;">
+            <form @submit.prevent="onLogin">
+                <h1 class="text-center">Admin Login</h1>
 
-            <div class="form-group my-2">
-                <input type="password" class="form-control" placeholder="Password" v-model="password" required>
-            </div>
+                <div class="form-group my-2">
+                    <input type="email" class="form-control" placeholder="Email" v-model="email" required>
+                </div>
 
-            <button type="submit" class="btn btn-dark w-100">
-                Login
-            </button>
-        </form>
+                <div class="form-group my-2">
+                    <input type="password" class="form-control" placeholder="Password" v-model="password" required>
+                </div>
+
+                <button type="submit" class="btn btn-secondary w-100">Login</button>
+            </form>
+        </div>
     </div>
 </template>
