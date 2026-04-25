@@ -1,12 +1,12 @@
 bryrmiginte.se {
-  encode
+  	encode
 
 	handle /api/* {
-		backend:8080
-	}
+		reverse_proxy backend:8080
+  	}
 
-  handle /images/* atlas:3000 {
-		atlas:3000
+  	handle /images/* {
+		reverse_proxy atlas:3000
 	}
 
 	handle {
