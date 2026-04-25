@@ -9,8 +9,8 @@
                 Elias Detlefsen
             </RouterLink>
 
-            <RouterLink to="/login" class="fs-5 text-white text-decoration-none link-item">
-                Login
+            <RouterLink to="/admin" class="fs-5 text-white text-decoration-none link-item">
+                Admin
             </RouterLink>
         </div>
     </header>
@@ -22,6 +22,6 @@
 }
 
 .link-item:hover {
-    filter: invert(25%)
+    filter: invert(25%);
 }
 </style>

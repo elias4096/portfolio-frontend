@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const email = ref('')
 const password = ref('')
 
@@ -18,12 +20,11 @@ async function onLogin() {
 
     if (!response.ok) {
         const errorText = await response.text()
-        console.error('Login failed:', response.status, errorText)
+        console.error('Login failed: ', response.status, errorText)
         return
     }
 
-    const data = await response.json()
-    console.log('Login success:', data)
+    router.replace('/admin')
 }
 </script>
 
