@@ -1,13 +1,9 @@
-bryrmiginte.se {
+eliasdetlefsen.se {
   	encode
 
 	handle /api/* {
 		reverse_proxy backend:8080
   	}
-
-  	handle /images/* {
-		reverse_proxy atlas:3000
-	}
 
 	handle {
 		root /srv

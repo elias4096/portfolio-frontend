@@ -2,38 +2,38 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ProjectDashboard from '@/components/ui/ProjectDashboard.vue'
+import { apiFetch } from '@/components/api/ApiFetch.vue'
 
 const router = useRouter()
-const email = ref(null)
+
+const user = ref(null)
+const loading = ref(true)
 
 onMounted(async () => {
-    login()
+    me()
 })
 
-async function login() {
+async function me() {
     try {
-        const res = await fetch('/api/auth/me', {
-            credentials: 'include'
-        })
-
-        if (!res.ok) {
-            router.replace('/login')
-            return
+        user.value = await apiFetch('/api/auth/me')
+    } catch (error) {
+        if (error?.message) {
+            console.error(error)
         }
 
-        const data = await res.json()
-        email.value = data.email
-    } catch {
         router.replace('/login')
+    } finally {
+        loading.value = false
     }
 }
 
 async function logout() {
     try {
-        await fetch('/api/auth/logout', {
-            method: 'POST',
-            credentials: 'include'
-        })
+        await apiFetch('/api/auth/logout', { method: 'POST' })
+    } catch (error) {
+        if (error?.message) {
+            console.error(error)
+        }
     } finally {
         router.replace('/login')
     }
@@ -45,13 +45,13 @@ async function logout() {
         <div class="row justify-content-center">
             <div class="col-12 col-md-8">
 
-                <div v-if="email" class="card p-4">
+                <div v-if="user" class="card p-4">
                     <div class="d-flex justify-content-between">
                         <h5>Admin Dashboard</h5>
                         <button class="btn btn-sm btn-outline-danger" @click="logout">Logout</button>
                     </div>
 
-                    <p>Logged in as <strong>{{ email }}</strong></p>
+                    <p>Logged in as <strong>{{ user.email }}</strong></p>
 
                     <ProjectDashboard></ProjectDashboard>
                 </div>

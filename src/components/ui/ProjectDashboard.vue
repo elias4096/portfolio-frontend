@@ -2,35 +2,66 @@
 import { ref, onMounted } from 'vue'
 
 const projects = ref([])
-const form = ref({ displayOrder: null, markdown: null })
 const isEditing = ref(false)
 
-onMounted(async () => {
-    await loadProjects()
+const form = ref({
+    id: null,
+    displayOrder: null,
+    markdown: '',
+    imageUuid: null,
+    file: null
 })
+
+onMounted(loadProjects)
 
 async function loadProjects() {
     const res = await fetch('/api/projects', { credentials: 'include' })
     projects.value = await res.json()
 }
 
+async function maybeCreateImage() {
+    if (!form.value.file) return null
+    return await createImage()
+}
+
 async function createProject() {
+    let imageUuid = null
+
+    try {
+        imageUuid = await maybeCreateImage()
+    } catch { }
+
     await fetch('/api/projects', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayOrder: form.value.displayOrder, markdown: form.value.markdown })
+        body: JSON.stringify({
+            displayOrder: form.value.displayOrder,
+            markdown: form.value.markdown,
+            imageUuid
+        })
     })
 
     await loadProjects()
 }
 
 async function updateProject() {
+    let imageUuid = form.value.imageUuid
+
+    try {
+        const uploaded = await maybeCreateImage()
+        if (uploaded) imageUuid = uploaded
+    } catch { }
+
     await fetch(`/api/projects/${form.value.id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayOrder: form.value.displayOrder, markdown: form.value.markdown })
+        body: JSON.stringify({
+            displayOrder: form.value.displayOrder,
+            markdown: form.value.markdown,
+            imageUuid
+        })
     })
 
     await loadProjects()
@@ -41,20 +72,47 @@ async function deleteProject(id) {
         method: 'DELETE',
         credentials: 'include'
     })
-
     await loadProjects()
 }
 
+async function createImage() {
+    const res = await fetch('/api/images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'image/png' },
+        body: form.value.file
+    })
+
+    if (!res.ok) throw new Error('Image upload failed')
+    return await res.text()
+}
+
 function openCreate() {
-    form.value = { displayOrder: projects.value.length + 1, markdown: "" }
+    form.value = {
+        id: null,
+        displayOrder: projects.value.length + 1,
+        markdown: '',
+        imageUuid: null,
+        file: null
+    }
     isEditing.value = false
 }
 
 function openEdit(project) {
-    form.value = { ...project }
+    form.value = {
+        id: project.id,
+        displayOrder: project.displayOrder,
+        markdown: project.markdown,
+        imageUuid: project.imageUuid,
+        file: null
+    }
     isEditing.value = true
 }
+
+function onFileChange(event) {
+    form.value.file = event.target.files[0] || null
+}
 </script>
+
 
 <template>
     <div class="card p-4">
@@ -112,6 +170,8 @@ function openEdit(project) {
                         <label class="form-label">Markdown</label>
                         <textarea class="form-control form-control-lg" v-model="form.markdown" rows="8"></textarea>
                     </div>
+
+                    <input type="file" accept="image/png" @change="onFileChange" />
                 </div>
 
                 <div class="modal-footer">
