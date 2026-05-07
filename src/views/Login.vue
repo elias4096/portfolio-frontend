@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { apiFetch } from '@/components/api/ApiFetch.vue'
+import { apiFetch } from '@/api/ApiFetch.js'
+import Base from './Base.vue'
 
 const router = useRouter()
 
@@ -31,27 +32,30 @@ async function login() {
 </script>
 
 <template>
-    <div class="container my-4 d-flex justify-content-center align-items-center">
-        <div class="card p-4 w-100" style="max-width: 400px;">
-            <form @submit.prevent="login">
-                <h1 class="text-center">Admin Login</h1>
+    <Base>
+        <div class="col-4">
+            <div class="card p-4">
+                <form @submit.prevent="login">
+                    <h1 class="text-center">Admin Login</h1>
 
-                <div v-if="errorMessage" class="alert alert-danger my-2 text-center" role="alert">
-                    {{ errorMessage }}
-                </div>
+                    <div v-if="errorMessage" class="alert alert-danger my-2 text-center" role="alert">
+                        {{ errorMessage }}
+                    </div>
 
-                <div class="form-group my-2">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" placeholder="Email" v-model="userEmail" required>
-                </div>
+                    <div class="form-group my-2">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" placeholder="Email" v-model="userEmail" required>
+                    </div>
 
-                <div class="form-group my-2">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-control" placeholder="Password" v-model="userPassword" required>
-                </div>
+                    <div class="form-group my-2">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" placeholder="Password" v-model="userPassword"
+                            required>
+                    </div>
 
-                <button type="submit" class="btn btn-secondary w-100">Login</button>
-            </form>
+                    <button type="submit" class="btn btn-secondary w-100">Login</button>
+                </form>
+            </div>
         </div>
-    </div>
+    </Base>
 </template>

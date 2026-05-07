@@ -1,15 +1,16 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { apiFetch } from '@/api/ApiFetch'
+import Base from './Base.vue'
 import ProjectDashboard from '@/components/ui/ProjectDashboard.vue'
-import { apiFetch } from '@/components/api/ApiFetch.vue'
 
 const router = useRouter()
 
 const user = ref(null)
 const loading = ref(true)
 
-onMounted(async () => {
+onMounted(() => {
     me()
 })
 
@@ -41,22 +42,18 @@ async function logout() {
 </script>
 
 <template>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-8">
-
-                <div v-if="user" class="card p-4">
-                    <div class="d-flex justify-content-between">
-                        <h5>Admin Dashboard</h5>
-                        <button class="btn btn-sm btn-outline-danger" @click="logout">Logout</button>
-                    </div>
-
-                    <p>Logged in as <strong>{{ user.email }}</strong></p>
-
-                    <ProjectDashboard></ProjectDashboard>
+    <Base :loading="loading">
+        <div class="col-10">
+            <div v-if="user" class="card p-4">
+                <div class="d-flex justify-content-between">
+                    <h5>Admin Dashboard</h5>
+                    <button class="btn btn-sm btn-outline-danger" @click="logout">Logout</button>
                 </div>
 
+                <p>Logged in as <strong>{{ user.email }}</strong></p>
+
+                <ProjectDashboard></ProjectDashboard>
             </div>
         </div>
-    </div>
+    </Base>
 </template>

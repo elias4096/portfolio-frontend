@@ -1,42 +1,39 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { apiFetch } from '@/api/ApiFetch.js'
+import Base from './Base.vue'
 import ProjectTextCard from '@/components/ui/ProjectTextCard.vue'
 import ProjectImageCard from '@/components/ui/ProjectImageCard.vue'
 
 const projects = ref([])
+const loading = ref(true)
+const error = ref(null)
 
-onMounted(async () => {
-    loadProjects()
+onMounted(() => {
+    readProjects()
 })
 
-async function loadProjects() {
-    const res = await fetch('/api/projects', { credentials: 'include' })
-    projects.value = await res.json()
+async function readProjects() {
+    try {
+        projects.value = await apiFetch('/api/projects')
+    } catch {
+        projects.value = []
+        error.value = 'Failed to load projects.'
+    } finally {
+        loading.value = false
+    }
 }
 </script>
 
 <template>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-10">
-
-                <div class="mx-auto" style="max-width: 1000px;" v-for="(p, i) in projects">
-                    <div class="row my-5 justify-content-center">
-
-                        <template v-if="i % 2 === 0">
-                            <ProjectTextCard :project="p" />
-                            <ProjectImageCard :project="p" />
-                        </template>
-
-                        <template v-else>
-                            <ProjectImageCard :project="p" />
-                            <ProjectTextCard :project="p" />
-                        </template>
-
-                    </div>
+    <Base :loading="loading" :error="error">
+        <div class="col-10">
+            <div v-for="(p, i) in projects">
+                <div class="row">
+                    <component :is="i % 2 === 0 ? ProjectTextCard : ProjectImageCard" :project="p" />
+                    <component :is="i % 2 === 0 ? ProjectImageCard : ProjectTextCard" :project="p" />
                 </div>
-
             </div>
         </div>
-    </div>
+    </Base>
 </template>
