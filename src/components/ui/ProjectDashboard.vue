@@ -1,186 +1,70 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { apiFetch } from '@/api/ApiFetch'
+import { VueDraggableNext } from 'vue-draggable-next'
+import Base from '@/views/Base.vue'
 
 const projects = ref([])
-const isEditing = ref(false)
+const loading = ref(true)
+const error = ref(null)
 
-const form = ref({
-    id: null,
-    displayOrder: null,
-    markdown: '',
-    imageUuid: null,
-    file: null
-})
+onMounted(readProjects)
 
-onMounted(loadProjects)
-
-async function loadProjects() {
-    const res = await fetch('/api/projects', { credentials: 'include' })
-    projects.value = await res.json()
+async function readProjects() {
+    try {
+        projects.value = await apiFetch('/api/projects')
+    } catch {
+        projects.value = []
+        error.value = 'Failed to load projects.'
+    } finally {
+        loading.value = false
+    }
 }
 
-async function maybeCreateImage() {
-    if (!form.value.file) return null
-    return await createImage()
-}
-
-async function createProject() {
-    let imageUuid = null
+async function onReorder() {
+    const reordered = projects.value.map((p, index) => ({
+        id: p.id,
+        displayOrder: index
+    }))
 
     try {
-        imageUuid = await maybeCreateImage()
-    } catch { }
-
-    await fetch('/api/projects', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            displayOrder: form.value.displayOrder,
-            markdown: form.value.markdown,
-            imageUuid
+        await apiFetch('/api/projects/reorder', {
+            method: 'POST',
+            body: JSON.stringify(reordered),
         })
-    })
-
-    await loadProjects()
-}
-
-async function updateProject() {
-    let imageUuid = form.value.imageUuid
-
-    try {
-        const uploaded = await maybeCreateImage()
-        if (uploaded) imageUuid = uploaded
-    } catch { }
-
-    await fetch(`/api/projects/${form.value.id}`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            displayOrder: form.value.displayOrder,
-            markdown: form.value.markdown,
-            imageUuid
-        })
-    })
-
-    await loadProjects()
-}
-
-async function deleteProject(id) {
-    await fetch(`/api/projects/${id}`, {
-        method: 'DELETE',
-        credentials: 'include'
-    })
-    await loadProjects()
-}
-
-async function createImage() {
-    const res = await fetch('/api/images', {
-        method: 'POST',
-        headers: { 'Content-Type': 'image/png' },
-        body: form.value.file
-    })
-
-    if (!res.ok) throw new Error('Image upload failed')
-    return await res.text()
-}
-
-function openCreate() {
-    form.value = {
-        id: null,
-        displayOrder: projects.value.length + 1,
-        markdown: '',
-        imageUuid: null,
-        file: null
+    } catch {
+        error.value = 'Failed to reorder projects.'
     }
-    isEditing.value = false
-}
-
-function openEdit(project) {
-    form.value = {
-        id: project.id,
-        displayOrder: project.displayOrder,
-        markdown: project.markdown,
-        imageUuid: project.imageUuid,
-        file: null
-    }
-    isEditing.value = true
-}
-
-function onFileChange(event) {
-    form.value.file = event.target.files[0] || null
 }
 </script>
 
-
 <template>
-    <div class="card p-4">
-
-        <div class="d-flex justify-content-between">
-            <h5>Projects</h5>
-            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#projectModal"
-                @click="openCreate">
-                Create Project
-            </button>
-        </div>
-
-        <table class="table table-striped">
+    <Base :loading="loading" :error="error">
+        <table class="table">
             <thead>
                 <tr>
-                    <th>Display Order</th>
-                    <th></th>
+                    <th>Order</th>
+                    <th>Markdown</th>
+                    <th>Manage</th>
                 </tr>
             </thead>
-            <tbody>
+
+            <VueDraggableNext v-model="projects" tag="tbody" handle=".drag-handle" @change="onReorder">
                 <tr v-for="p in projects" :key="p.id">
-                    <td>{{ p.displayOrder }}</td>
+                    <td class="drag-handle">☰</td>
+                    <td>{{ p.markdown }}</td>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
-                            data-bs-target="#projectModal" @click="openEdit(p)">
-                            Update
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" @click="deleteProject(p.id)">
-                            Delete
-                        </button>
+                        <button class="btn btn-outline-warning mx-1">Update</button>
+                        <button class="btn btn-outline-danger mx-1">Delete</button>
                     </td>
                 </tr>
-            </tbody>
+            </VueDraggableNext>
         </table>
-
-    </div>
-
-    <div class="modal" id="projectModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        {{ isEditing ? 'Update Project' : 'Create Project' }}
-                    </h5>
-                    <button class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Display Order</label>
-                        <input type="number" class="form-control" v-model.number="form.displayOrder" step="1" min="0" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Markdown</label>
-                        <textarea class="form-control form-control-lg" v-model="form.markdown" rows="8"></textarea>
-                    </div>
-
-                    <input type="file" accept="image/png" @change="onFileChange" />
-                </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-success" data-bs-dismiss="modal"
-                        @click="isEditing ? updateProject() : createProject()">
-                        {{ isEditing ? 'Update' : 'Create' }}
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    </Base>
 </template>
+
+<style>
+.drag-handle {
+    cursor: grab;
+}
+</style>
